@@ -3,46 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>多層パーセプトロンによるXOR/XNOR</title>
+    <title>MLP XOR/XNOR 真理値表</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="container">
-        <h1>4bit MLP XOR/XNOR</h1>
-        <div class="input-grid">
-            <div class="input-bit">
-                <label for="bit1">A</label>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="bit1">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="input-bit">
-                <label for="bit2">B</label>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="bit2">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="input-bit">
-                <label for="bit3">C</label>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="bit3">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="input-bit">
-                <label for="bit4">D</label>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="bit4">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-        <div id="result">
-            <p>入力を選択してください</p>
-        </div>
+        <h1>MLP XOR/XNOR 真理値表</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>A</th>
+                    <th>B</th>
+                    <th>C</th>
+                    <th>D</th>
+                    <th>XOR</th>
+                    <th>XNOR</th>
+                </tr>
+            </thead>
+            <tbody id="truth-table-body">
+                </tbody>
+        </table>
     </div>
 
     <script src="script.js"></script>
