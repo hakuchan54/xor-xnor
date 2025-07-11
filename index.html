@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MLP XOR/XNOR 真理値表</title>
+    <title>MLP(2入力) XOR/XNOR 真理値表</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* 上寄せに変更 */
+            align-items: flex-start;
             min-height: 100vh;
             margin: 0;
-            padding-top: 2rem; /* 上に余白を追加 */
+            padding: 2rem;
             background-color: #f0f2f5;
         }
         .container {
@@ -20,14 +20,25 @@
             padding: 2rem;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            text-align: center;
             width: 90%;
-            max-width: 500px;
+            max-width: 800px;
         }
         h1 {
             color: #333;
             margin-top: 0;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .main-content {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .table-container {
+            flex: 1;
+            min-width: 280px;
         }
         table {
             width: 100%;
@@ -43,44 +54,102 @@
             background-color: #f2f2f2;
             font-weight: bold;
         }
-        tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
         .output-val {
             font-weight: bold;
             font-family: monospace;
             padding: 0.2rem 0.5rem;
             border-radius: 5px;
             color: white;
-            display: inline-block;
-            width: 25px;
         }
-        .xor-val {
-            background-color: #28a745;
+        .xor-val { background-color: #28a745; }
+        .xnor-val { background-color: #dc3545; }
+
+        /* --- MLP図のスタイル --- */
+        .mlp-diagram {
+            flex: 1;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            min-width: 300px;
+            height: 200px;
+            position: relative;
         }
-        .xnor-val {
-            background-color: #dc3545;
+        .layer {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            align-items: center;
+            z-index: 2;
+        }
+        .node {
+            width: 40px;
+            height: 40px;
+            background-color: #fff;
+            border: 3px solid #3498db;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+        .layer-label {
+            position: absolute;
+            bottom: -30px;
+            font-size: 0.9em;
+            color: #777;
+        }
+        .input-layer .layer-label { left: -15px; }
+        .hidden-layer .layer-label { left: 42%; transform: translateX(-50%); }
+        .output-layer .layer-label { right: -10px; }
+        .line {
+            position: absolute;
+            background-color: #bdc3c7;
+            height: 2px;
+            width: 110px;
+            z-index: 1;
+            top: 50%;
+            left: 50%;
+            transform-origin: 0 0;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>MLP XOR/XNOR 真理値表</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>A</th>
-                    <th>B</th>
-                    <th>C</th>
-                    <th>D</th>
-                    <th>XOR</th>
-                    <th>XNOR</th>
-                </tr>
-            </thead>
-            <tbody id="truth-table-body">
-                </tbody>
-        </table>
+        <h1>MLP XOR/XNOR (2入力)</h1>
+        <div class="main-content">
+            <div class="mlp-diagram">
+                <div class="connections" id="connections"></div>
+                <div class="layer input-layer">
+                    <div class="node">A</div>
+                    <div class="node">B</div>
+                    <div class="layer-label">入力層</div>
+                </div>
+                <div class="layer hidden-layer">
+                    <div class="node">h1</div>
+                    <div class="node">h2</div>
+                    <div class="layer-label">隠れ層</div>
+                </div>
+                <div class="layer output-layer">
+                    <div class="node">Y</div>
+                    <div class="layer-label">出力層</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>A</th>
+                            <th>B</th>
+                            <th>XOR</th>
+                            <th>XNOR</th>
+                        </tr>
+                    </thead>
+                    <tbody id="truth-table-body"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -107,42 +176,71 @@
         };
 
         /**
-         * ページ読み込み時に真理値表を生成する
+         * ページ読み込み時の処理
          */
         window.addEventListener('load', () => {
+            // 1. 真理値表を生成
             const tableBody = document.getElementById('truth-table-body');
-            const totalPatterns = 16; // 2の4乗
+            const totalPatterns = 4; // 2の2乗
 
-            // 0000から1111までの16パターンをループ
             for (let i = 0; i < totalPatterns; i++) {
-                // iを4ビットのバイナリに変換
-                const a = (i >> 3) & 1;
-                const b = (i >> 2) & 1;
-                const c = (i >> 1) & 1;
-                const d = i & 1;
+                const a = (i >> 1) & 1; // 2ビット目
+                const b = i & 1;        // 1ビット目
 
-                // 4入力XORをMLPで計算
-                let xorResult = MLP.predict(a, b);
-                xorResult = MLP.predict(xorResult, c);
-                xorResult = MLP.predict(xorResult, d);
-
+                const xorResult = MLP.predict(a, b);
                 const finalXOR = Math.round(xorResult);
                 const finalXNOR = 1 - finalXOR;
 
-                // テーブルの行を作成
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${a}</td>
                     <td>${b}</td>
-                    <td>${c}</td>
-                    <td>${d}</td>
                     <td><span class="output-val xor-val">${finalXOR}</span></td>
                     <td><span class="output-val xnor-val">${finalXNOR}</span></td>
                 `;
-
-                // テーブルに作成した行を追加
                 tableBody.appendChild(row);
             }
+
+            // 2. MLP図の接続線を動的に描画
+            const connectionsDiv = document.getElementById('connections');
+            const nodes = document.querySelectorAll('.node');
+            const inputNodes = Array.from(nodes).slice(0, 2);
+            const hiddenNodes = Array.from(nodes).slice(2, 4);
+            const outputNodes = Array.from(nodes).slice(4, 5);
+
+            function drawLine(fromNode, toNode) {
+                const rectFrom = fromNode.getBoundingClientRect();
+                const rectTo = toNode.getBoundingClientRect();
+                const containerRect = connectionsDiv.parentElement.getBoundingClientRect();
+
+                const x1 = rectFrom.left + rectFrom.width / 2 - containerRect.left;
+                const y1 = rectFrom.top + rectFrom.height / 2 - containerRect.top;
+                const x2 = rectTo.left + rectTo.width / 2 - containerRect.left;
+                const y2 = rectTo.top + rectTo.height / 2 - containerRect.top;
+
+                const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+                const line = document.createElement('div');
+                line.className = 'line';
+                line.style.width = `${length}px`;
+                line.style.left = `${x1}px`;
+                line.style.top = `${y1}px`;
+                line.style.transform = `rotate(${angle}deg)`;
+                connectionsDiv.appendChild(line);
+            }
+
+            inputNodes.forEach(inputNode => {
+                hiddenNodes.forEach(hiddenNode => {
+                    drawLine(inputNode, hiddenNode);
+                });
+            });
+
+            hiddenNodes.forEach(hiddenNode => {
+                outputNodes.forEach(outputNode => {
+                    drawLine(hiddenNode, outputNode);
+                });
+            });
         });
     </script>
 
