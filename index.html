@@ -4,7 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MLP XOR/XNOR 真理値表</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* 上寄せに変更 */
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 2rem; /* 上に余白を追加 */
+            background-color: #f0f2f5;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1.1rem;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 0.75rem;
+            text-align: center;
+        }
+        thead {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .output-val {
+            font-weight: bold;
+            font-family: monospace;
+            padding: 0.2rem 0.5rem;
+            border-radius: 5px;
+            color: white;
+            display: inline-block;
+            width: 25px;
+        }
+        .xor-val {
+            background-color: #28a745;
+        }
+        .xnor-val {
+            background-color: #dc3545;
+        }
+    </style>
 </head>
 <body>
 
@@ -26,7 +83,68 @@
         </table>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        /**
+         * 多層パーセプトロン（MLP）のコアロジック
+         */
+        const MLP = {
+            sigmoid: (x) => 1 / (1 + Math.exp(-x)),
+            weights: {
+                hidden: [[-20, 20], [-20, 20]],
+                hiddenBias: [30, -10],
+                output: [20, 20],
+                outputBias: -30,
+            },
+            predict: function(input1, input2) {
+                const hiddenLayerInput1 = input1 * this.weights.hidden[0][0] + input2 * this.weights.hidden[1][0] + this.weights.hiddenBias[0];
+                const hiddenLayerOutput1 = this.sigmoid(hiddenLayerInput1);
+                const hiddenLayerInput2 = input1 * this.weights.hidden[0][1] + input2 * this.weights.hidden[1][1] + this.weights.hiddenBias[1];
+                const hiddenLayerOutput2 = this.sigmoid(hiddenLayerInput2);
+                const outputLayerInput = hiddenLayerOutput1 * this.weights.output[0] + hiddenLayerOutput2 * this.weights.output[1] + this.weights.outputBias;
+                const output = this.sigmoid(outputLayerInput);
+                return output;
+            }
+        };
+
+        /**
+         * ページ読み込み時に真理値表を生成する
+         */
+        window.addEventListener('load', () => {
+            const tableBody = document.getElementById('truth-table-body');
+            const totalPatterns = 16; // 2の4乗
+
+            // 0000から1111までの16パターンをループ
+            for (let i = 0; i < totalPatterns; i++) {
+                // iを4ビットのバイナリに変換
+                const a = (i >> 3) & 1;
+                const b = (i >> 2) & 1;
+                const c = (i >> 1) & 1;
+                const d = i & 1;
+
+                // 4入力XORをMLPで計算
+                let xorResult = MLP.predict(a, b);
+                xorResult = MLP.predict(xorResult, c);
+                xorResult = MLP.predict(xorResult, d);
+
+                const finalXOR = Math.round(xorResult);
+                const finalXNOR = 1 - finalXOR;
+
+                // テーブルの行を作成
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${a}</td>
+                    <td>${b}</td>
+                    <td>${c}</td>
+                    <td>${d}</td>
+                    <td><span class="output-val xor-val">${finalXOR}</span></td>
+                    <td><span class="output-val xnor-val">${finalXNOR}</span></td>
+                `;
+
+                // テーブルに作成した行を追加
+                tableBody.appendChild(row);
+            }
+        });
+    </script>
 
 </body>
 </html>
